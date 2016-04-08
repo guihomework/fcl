@@ -873,6 +873,53 @@ BOOST_AUTO_TEST_CASE(shapeIntersection_cylindercylinder)
   testShapeIntersection(s1, tf1, s2, tf2, GST_LIBCCD, false);
 }
 
+BOOST_AUTO_TEST_CASE(shapeIntersection_cylindercylinder_fingers)
+{
+  Cylinder s1(0.007, 0.040);
+  Cylinder s2(0.007, 0.025);
+  Transform3f tf1;
+  Transform3f tf2;
+  std::vector<ContactPoint> contacts;
+  
+  Transform3f tfj1pos = Transform3f(Vec3f(0.011, 0, 0.004));
+  Transform3f tfs1center = Transform3f(Vec3f(0.0, 0, 0.025));
+  Transform3f tfs2center = Transform3f(Vec3f(0.0, 0, 0.0575));
+  Transform3f tfj2pos = Transform3f(Vec3f(-0.011, 0, 0.0));
+  
+  Quaternion3f q;
+  q.fromAxisAngle(Vec3f(0, -1, 0), (FCL_REAL)-0.13);
+  Transform3f tfj1rot = Transform3f(q);
+  q.fromAxisAngle(Vec3f(0, 1, 0), (FCL_REAL)0.12);
+  Transform3f tfj2rot = Transform3f(q);
+  std::cout << "test: no proximal / middle offset (both at same height)\n";
+  // without offset
+  tf1 = tfj1pos;
+  tf2 = tfj2pos;
+  testShapeIntersection(s1, tf1, s2, tf2, GST_LIBCCD, false, contacts, false, false, false, false);
+  std::cout << "test: proximal and middle as in the hand\n";    
+  // without rotation
+  tf1 = tfj1pos *  tfs1center;
+  tf2 = tfj2pos *  tfs2center;
+  testShapeIntersection(s1, tf1, s2, tf2, GST_LIBCCD, false, contacts, false, false, false, false);
+  std::cout << "test: proximal and middle as in the hand with 0.12 rad angle\n";    
+  // with rotation ok
+  tf1 = tfj1pos * tfj1rot * tfs1center;
+  tf2 = tfj2pos * tfj2rot * tfs2center;
+  testShapeIntersection(s1, tf1, s2, tf2, GST_LIBCCD, false, contacts, false, false, false, false);
+  
+  std::cout << "test: proximal and middle as in the hand with 0.13 rad angle\n";    
+  // with rotation 0.01 RAD more
+  q.fromAxisAngle(Vec3f(0, 1, 0), (FCL_REAL)0.13);
+  tfj2rot = Transform3f(q);
+
+  tf1 = tfj1pos * tfj1rot * tfs1center;
+  tf2 = tfj2pos * tfj2rot * tfs2center;
+  testShapeIntersection(s1, tf1, s2, tf2, GST_LIBCCD, false, contacts, false, false, false, false);
+  
+}
+
+
+
 BOOST_AUTO_TEST_CASE(shapeIntersection_conecone)
 {
   Cone s1(5, 10);
